@@ -190,7 +190,6 @@ Depends:
  libavfilter-ffmpeg5 (= ${binary:Version}),
  libavformat-ffmpeg56 (= ${binary:Version}),
  libavutil-ffmpeg54 (= ${binary:Version}),
- libpostproc-ffmpeg53 (= ${binary:Version}),
  libavresample-ffmpeg2 (= ${binary:Version}),
  libswresample-ffmpeg1 (= ${binary:Version}),
  libswscale-ffmpeg3 (= ${binary:Version}),
@@ -368,7 +367,6 @@ Depends:
  libavformat-dev (= ${binary:Version}),
  libavresample-dev (= ${binary:Version}),
  libavutil-dev (= ${binary:Version}),
- libpostproc-dev (= ${binary:Version}),
  libswscale-dev (= ${binary:Version}),
  libswresample-dev (= ${binary:Version}),
  ${misc:Depends}
@@ -417,7 +415,6 @@ Depends:
  libavformat-dev (= ${binary:Version}),
  libavresample-dev (= ${binary:Version}),
  libavutil-dev (= ${binary:Version}),
- libpostproc-dev (= ${binary:Version}),
  libswresample-dev (= ${binary:Version}),
  libswscale-dev (= ${binary:Version}),
  ${misc:Depends}
@@ -567,46 +564,6 @@ Description: FFmpeg library with functions for simplifying programming - develop
  related functionality (like enumerations for pixel and sample formats).
  It is not a library for code needed by both libavcodec and libavformat.
  The goal for this library is to be modular, small, efficient and useful.
- .
- This package contains the development files.
-
-Package: libpostproc-ffmpeg53
-Architecture: any
-Section: libs
-Multi-Arch: same
-Pre-Depends:
- ${misc:Pre-Depends}
-Depends:
- ${shlibs:Depends},
- ${misc:Depends}
-Breaks: libavutil-ffmpeg54 (>= 8:0)
-Description: FFmpeg library for post processing - runtime files
- FFmpeg is the leading multimedia framework, able to decode, encode, transcode,
- mux, demux, stream, filter and play pretty much anything that humans and
- machines have created. It supports the most obscure ancient formats up to the
- cutting edge.
- .
- This library provides video post processing.
- .
- This package contains the runtime files.
-
-Package: libpostproc-dev
-Architecture: any
-Section: libdevel
-Multi-Arch: same
-Conflicts:
- libpostproc-libav-dev
-Depends:
- libavutil-dev (= ${binary:Version}),
- libpostproc-ffmpeg53 (= ${binary:Version}),
- ${misc:Depends}
-Description: FFmpeg library for post processing - development files
- FFmpeg is the leading multimedia framework, able to decode, encode, transcode,
- mux, demux, stream, filter and play pretty much anything that humans and
- machines have created. It supports the most obscure ancient formats up to the
- cutting edge.
- .
- This library provides video post processing.
  .
  This package contains the development files.
 
