@@ -1,3 +1,9 @@
+ffmpeg (7:2.8.8-0ubuntu0.16.04.1bb1) UNRELEASED; urgency=medium
+
+  * Balabit patched version
+
+ -- Balabit Platform Team <devnull@dev.null>  Thu, 03 Nov 2016 13:14:46 +0100
+
 ffmpeg (7:2.8.8-0ubuntu0.16.04.1) xenial-security; urgency=medium
 
   * Import new upstream bugfix release 2.8.8. (LP: #1581156)
