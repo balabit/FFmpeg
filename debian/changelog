@@ -1,3 +1,10 @@
+ffmpeg (7:2.8.10-0ubuntu0.16.04.1) xenial-security; urgency=medium
+
+  * New upstream bugfix release 2.8.10. (LP: #1647226)
+    Fixes CVE-2016-7502, CVE-2016-7562, CVE-2016-7785 and CVE-2016-7905.
+
+ -- Andreas Cadhalpun <Andreas.Cadhalpun@googlemail.com>  Sat, 10 Dec 2016 17:41:36 +0100
+
 ffmpeg (7:2.8.8-0ubuntu0.16.04.1) xenial-security; urgency=medium
 
   * Import new upstream bugfix release 2.8.8. (LP: #1581156)
