@@ -1,3 +1,11 @@
+ffmpeg (7:2.8.11-0ubuntu0.16.04.1) xenial-security; urgency=medium
+
+  * Import new upstream bugfix release 2.8.11. (LP: #1664403)
+    Fixes CVE-2016-9561, CVE-2017-5024 and CVE-2017-5025.
+  * Add new av_image_check_size2 symbol to libavutil55.symbols.
+
+ -- Andreas Cadhalpun <Andreas.Cadhalpun@googlemail.com>  Tue, 14 Feb 2017 00:49:10 +0100
+
 ffmpeg (7:2.8.10-0ubuntu0.16.04.1) xenial-security; urgency=medium
 
   * New upstream bugfix release 2.8.10. (LP: #1647226)
