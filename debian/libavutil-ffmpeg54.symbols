@@ -225,6 +225,7 @@ libavutil-ffmpeg.so.54 libavutil-ffmpeg54 #MINVER#
  av_hmac_update@LIBAVUTIL_FFMPEG_54 7:2.4
  av_image_alloc@LIBAVUTIL_FFMPEG_54 7:2.4
  av_image_check_sar@LIBAVUTIL_FFMPEG_54 7:2.4
+ av_image_check_size2@LIBAVUTIL_FFMPEG_54 7:2.8.11
  av_image_check_size@LIBAVUTIL_FFMPEG_54 7:2.4
  av_image_copy@LIBAVUTIL_FFMPEG_54 7:2.4
  av_image_copy_plane@LIBAVUTIL_FFMPEG_54 7:2.4
