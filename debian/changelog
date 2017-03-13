@@ -1,3 +1,9 @@
+ffmpeg (7:2.8.11-0ubuntu0.16.04.1bb2) xenial; urgency=medium
+
+  * Balabit patched version
+
+ -- Balabit Platform Team <devnull@dev.null>  Mon, 13 Mar 2017 11:32:35 +0100
+
 ffmpeg (7:2.8.11-0ubuntu0.16.04.1bb1) xenial; urgency=medium
 
   * Balabit patched version
