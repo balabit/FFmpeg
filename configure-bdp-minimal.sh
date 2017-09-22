@@ -7,6 +7,7 @@
         --enable-libvpx --enable-decoder=vp8 --enable-parser=vp8 --enable-demuxer=webm_dash_manifest --enable-demuxer=matroska \
         --enable-decoder=h264 --enable-demuxer=h264 --enable-parser=h264 \
         --enable-parser=mpegaudio \
+        --enable-libass \
         --enable-demuxer=wav \
         --enable-parser=aac --enable-demuxer=aac --enable-decoder=aac \
         --enable-protocol=file \
