@@ -88,16 +88,10 @@ fate-av-fft-float: $(FATE_AV_FFT-yes)
 fate-av-mdct-float: $(FATE_AV_MDCT-yes)
 fate-av-rdft-float: $(FATE_AV_RDFT-yes)
 
-FATE_AV_FFT_ALL = $(FATE_AV_DCT-yes) $(FATE_AV_FFT-yes) $(FATE_AV_MDCT-yes) $(FATE_AV_RDFT-yes)
-
-$(FATE_AV_FFT_ALL): libavcodec/tests/avfft$(EXESUF)
-$(FATE_AV_FFT_ALL): CMD = run libavcodec/tests/avfft $(CPUFLAGS:%=-c%) $(ARGS)
-$(FATE_AV_FFT_ALL): CMP = null
-
 fate-dct: fate-dct-float
 fate-fft: fate-fft-float fate-fft-fixed fate-fft-fixed32
 fate-mdct: fate-mdct-float fate-mdct-fixed
 fate-rdft: fate-rdft-float
 
-FATE-$(call ALLYES, AVCODEC FFT MDCT) += $(FATE_FFT_ALL) $(FATE_FFT_FIXED_ALL) $(FATE_FFT_FIXED32) $(FATE_AV_FFT_ALL)
-fate-fft-all: $(FATE_FFT_ALL) $(FATE_FFT_FIXED_ALL) $(FATE_FFT_FIXED32) $(FATE_AV_FFT_ALL)
+FATE-$(call ALLYES, AVCODEC FFT MDCT) += $(FATE_FFT_ALL) $(FATE_FFT_FIXED_ALL) $(FATE_FFT_FIXED32)
+fate-fft-all: $(FATE_FFT_ALL) $(FATE_FFT_FIXED_ALL) $(FATE_FFT_FIXED32)
