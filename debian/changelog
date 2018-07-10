@@ -1,3 +1,12 @@
+ffmpeg (7:3.4.2-2bb1) unstable; urgency=medium
+
+  * Disable everything
+  * Use only LGPL 2.1 license components
+  * Only H264 support is needed for ICA playback
+  * VPX, WEBM, libass support could be used by the BDP
+
+ -- Tamas Domok <tamas.domok@oneidentity.com>  Mon, 09 Jul 2018 15:00:00 +0100
+
 ffmpeg (7:3.4.2-2) unstable; urgency=medium
 
   [ James Cowgill ]
