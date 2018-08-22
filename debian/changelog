@@ -1,3 +1,12 @@
+ffmpeg (7:3.4.4-0ubuntu0.18.04.1) bionic-security; urgency=medium
+
+  * SECURITY UPDATE: New upstream release.
+    - Fixes CVE-2018-7557, CVE-2018-7751, CVE-2018-10001,
+      CVE-2018-12458, CVE-2018-13300, CVE-2018-13302, CVE-2018-14394 and
+      CVE-2018-14395.
+
+ -- Eduardo Barretto <eduardo.barretto@canonical.com>  Wed, 22 Aug 2018 17:19:37 -0300
+
 ffmpeg (7:3.4.2-2) unstable; urgency=medium
 
   [ James Cowgill ]
