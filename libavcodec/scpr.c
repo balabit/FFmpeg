@@ -504,7 +504,7 @@ static int decompress_p(AVCodecContext *avctx,
 {
     SCPRContext *s = avctx->priv_data;
     GetByteContext *gb = &s->gb;
-    int ret, temp, min, max, x, y, cx = 0, cx1 = 0;
+    int ret, temp = 0, min, max, x, y, cx = 0, cx1 = 0;
     int backstep = linesize - avctx->width;
     const int cxshift = s->cxshift;
 
@@ -522,6 +522,9 @@ static int decompress_p(AVCodecContext *avctx,
         return ret;
 
     max += temp << 8;
+    if (min > max)
+        return AVERROR_INVALIDDATA;
+
     memset(s->blocks, 0, sizeof(*s->blocks) * s->nbcount);
 
     while (min <= max) {

@@ -1170,6 +1170,9 @@ static int mov_read_moov(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 
 static int mov_read_moof(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 {
+    // Set by mov_read_tfhd(). mov_read_trun() will reject files missing tfhd.
+    c->fragment.found_tfhd = 0;
+
     if (!c->has_looked_for_mfra && c->use_mfra_for > 0) {
         c->has_looked_for_mfra = 1;
         if (pb->seekable & AVIO_SEEKABLE_NORMAL) {
@@ -2365,7 +2368,8 @@ static int mov_read_stsd(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     avio_rb24(pb); /* flags */
     entries = avio_rb32(pb);
 
-    if (entries <= 0) {
+    /* Each entry contains a size (4 bytes) and format (4 bytes). */
+    if (entries <= 0 || entries > atom.size / 8) {
         av_log(c->fc, AV_LOG_ERROR, "invalid STSD entries %d\n", entries);
         return AVERROR_INVALIDDATA;
     }
@@ -2492,8 +2496,11 @@ static inline int64_t mov_get_stsc_samples(MOVStreamContext *sc, unsigned int in
 
     if (mov_stsc_index_valid(index, sc->stsc_count))
         chunk_count = sc->stsc_data[index + 1].first - sc->stsc_data[index].first;
-    else
+    else {
+        // Validation for stsc / stco  happens earlier in mov_read_stsc + mov_read_trak.
+        av_assert0(sc->stsc_data[index].first <= sc->chunk_count);
         chunk_count = sc->chunk_count - (sc->stsc_data[index].first - 1);
+    }
 
     return sc->stsc_data[index].count * (int64_t)chunk_count;
 }
@@ -3804,7 +3811,7 @@ static int mov_read_trak(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 
     st = avformat_new_stream(c->fc, NULL);
     if (!st) return AVERROR(ENOMEM);
-    st->id = c->fc->nb_streams;
+    st->id = -1;
     sc = av_mallocz(sizeof(MOVStreamContext));
     if (!sc) return AVERROR(ENOMEM);
 
@@ -3818,6 +3825,13 @@ static int mov_read_trak(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 
     c->trak_index = -1;
 
+    // Here stsc refers to a chunk not described in stco. This is technically invalid,
+    // but we can overlook it (clearing stsc) whenever stts_count == 0 (indicating no samples).
+    if (!sc->chunk_count && !sc->stts_count && sc->stsc_count) {
+        sc->stsc_count = 0;
+        av_freep(&sc->stsc_data);
+    }
+
     /* sanity checks */
     if ((sc->chunk_count && (!sc->stts_count || !sc->stsc_count ||
                             (!sc->sample_size && !sc->sample_count))) ||
@@ -3826,7 +3840,7 @@ static int mov_read_trak(MOVContext *c, AVIOContext *pb, MOVAtom atom)
                st->index);
         return 0;
     }
-    if (sc->chunk_count && sc->stsc_count && sc->stsc_data[ sc->stsc_count - 1 ].first > sc->chunk_count) {
+    if (sc->stsc_count && sc->stsc_data[ sc->stsc_count - 1 ].first > sc->chunk_count) {
         av_log(c->fc, AV_LOG_ERROR, "stream %d, contradictionary STSC and STCO\n",
                st->index);
         return AVERROR_INVALIDDATA;
@@ -4086,6 +4100,11 @@ static int mov_read_tkhd(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     st = c->fc->streams[c->fc->nb_streams-1];
     sc = st->priv_data;
 
+    // Each stream (trak) should have exactly 1 tkhd. This catches bad files and
+    // avoids corrupting AVStreams mapped to an earlier tkhd.
+    if (st->id != -1)
+        return AVERROR_INVALIDDATA;
+
     version = avio_r8(pb);
     flags = avio_rb24(pb);
     st->disposition |= (flags & MOV_TKHD_FLAG_ENABLED) ? AV_DISPOSITION_DEFAULT : 0;
@@ -4188,6 +4207,8 @@ static int mov_read_tfhd(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     MOVTrackExt *trex = NULL;
     MOVFragmentIndex* index = NULL;
     int flags, track_id, i, found = 0;
+
+    c->fragment.found_tfhd = 1;
 
     avio_r8(pb); /* version */
     flags = avio_rb24(pb);
@@ -4335,6 +4356,11 @@ static int mov_read_trun(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     int data_offset = 0;
     unsigned entries, first_sample_flags = frag->flags;
     int flags, distance, i;
+
+    if (!frag->found_tfhd) {
+        av_log(c->fc, AV_LOG_ERROR, "trun track id unknown, no tfhd was found\n");
+        return AVERROR_INVALIDDATA;
+    }
 
     for (i = 0; i < c->fc->nb_streams; i++) {
         if (c->fc->streams[i]->id == frag->track_id) {
@@ -4576,7 +4602,7 @@ static int mov_read_sidx(MOVContext *c, AVIOContext *pb, MOVAtom atom)
                 break;
             }
         }
-        for (i = 0; i < c->fc->nb_streams; i++) {
+        if (ref_st) for (i = 0; i < c->fc->nb_streams; i++) {
             st = c->fc->streams[i];
             sc = st->priv_data;
             if (!sc->has_sidx) {

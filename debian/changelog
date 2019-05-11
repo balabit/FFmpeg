@@ -1,3 +1,10 @@
+ffmpeg (7:3.4.6-0ubuntu0.18.04.1) bionic-security; urgency=medium
+
+  * SECURITY UPDATE: New upstream bugfix release. (LP: #1823786)
+    - Fixes CVE-2019-9718, CVE-2019-9721, CVE-2018-15822.
+
+ -- Eduardo Barretto <eduardo.barretto@canonical.com>  Wed, 24 Apr 2019 14:39:22 -0300
+
 ffmpeg (7:3.4.4-0ubuntu0.18.04.1bb1) bionic; urgency=medium
 
   * Balabit patched version
