@@ -140,7 +140,7 @@ typedef struct DiracContext {
     GetBitContext gb;
     AVDiracSeqHeader seq;
     int seen_sequence_header;
-    int frame_number;           /* number of the next frame to display       */
+    int64_t frame_number;       /* number of the next frame to display       */
     Plane plane[3];
     int chroma_x_shift;
     int chroma_y_shift;
@@ -667,6 +667,10 @@ static void decode_component(DiracContext *s, int comp)
             b->length = get_interleaved_ue_golomb(&s->gb);
             if (b->length) {
                 b->quant = get_interleaved_ue_golomb(&s->gb);
+                if (b->quant > (DIRAC_MAX_QUANT_INDEX - 1)) {
+                    av_log(s->avctx, AV_LOG_ERROR, "Unsupported quant %d\n", b->quant);
+                    b->quant = 0;
+                }
                 align_get_bits(&s->gb);
                 b->coeff_data = s->gb.buffer + get_bits_count(&s->gb)/8;
                 b->length = FFMIN(b->length, FFMAX(get_bits_left(&s->gb)/8, 0));
@@ -985,6 +989,10 @@ static int decode_lowdelay(DiracContext *s)
             for (slice_x = 0; bufsize > 0 && slice_x < s->num_x; slice_x++) {
                 bytes = (slice_num+1) * (int64_t)s->lowdelay.bytes.num / s->lowdelay.bytes.den
                        - slice_num    * (int64_t)s->lowdelay.bytes.num / s->lowdelay.bytes.den;
+                if (bytes >= INT_MAX || bytes*8 > bufsize) {
+                    av_log(s->avctx, AV_LOG_ERROR, "too many bytes\n");
+                    return AVERROR_INVALIDDATA;
+                }
                 slices[slice_num].bytes   = bytes;
                 slices[slice_num].slice_x = slice_x;
                 slices[slice_num].slice_y = slice_y;
@@ -1242,7 +1250,10 @@ static int dirac_unpack_idwt_params(DiracContext *s)
     else {
         s->num_x        = get_interleaved_ue_golomb(gb);
         s->num_y        = get_interleaved_ue_golomb(gb);
-        if (s->num_x * s->num_y == 0 || s->num_x * (uint64_t)s->num_y > INT_MAX) {
+        if (s->num_x * s->num_y == 0 || s->num_x * (uint64_t)s->num_y > INT_MAX ||
+            s->num_x * (uint64_t)s->avctx->width  > INT_MAX ||
+            s->num_y * (uint64_t)s->avctx->height > INT_MAX
+        ) {
             av_log(s->avctx,AV_LOG_ERROR,"Invalid numx/y\n");
             s->num_x = s->num_y = 0;
             return AVERROR_INVALIDDATA;
@@ -1398,8 +1409,8 @@ static void global_mv(DiracContext *s, DiracBlock *block, int x, int y, int ref)
     int *c      = s->globalmc[ref].perspective;
 
     int m       = (1<<ep) - (c[0]*x + c[1]*y);
-    int64_t mx  = m * (int64_t)((A[0][0] * x + A[0][1]*y) + (1<<ez) * b[0]);
-    int64_t my  = m * (int64_t)((A[1][0] * x + A[1][1]*y) + (1<<ez) * b[1]);
+    int64_t mx  = m * (int64_t)((A[0][0] * (int64_t)x + A[0][1]*(int64_t)y) + (1<<ez) * b[0]);
+    int64_t my  = m * (int64_t)((A[1][0] * (int64_t)x + A[1][1]*(int64_t)y) + (1<<ez) * b[1]);
 
     block->u.mv[ref][0] = (mx + (1<<(ez+ep))) >> (ez+ep);
     block->u.mv[ref][1] = (my + (1<<(ez+ep))) >> (ez+ep);
@@ -2302,7 +2313,7 @@ static int dirac_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     }
 
     if (*got_frame)
-        s->frame_number = picture->display_picture_number + 1;
+        s->frame_number = picture->display_picture_number + 1LL;
 
     return buf_idx;
 }
