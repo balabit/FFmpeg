@@ -1,3 +1,9 @@
+ffmpeg (7:3.4.6-0ubuntu0.18.04.1bb1) bionic; urgency=medium
+
+  * Balabit patched version
+
+ -- Balabit Platform Team <devnull@dev.null>  Sat, 11 May 2019 04:22:54 +0200
+
 ffmpeg (7:3.4.6-0ubuntu0.18.04.1) bionic-security; urgency=medium
 
   * SECURITY UPDATE: New upstream bugfix release. (LP: #1823786)
