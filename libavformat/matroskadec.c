@@ -684,7 +684,7 @@ static const EbmlSyntax matroska_segments[] = {
 };
 
 static const EbmlSyntax matroska_blockmore[] = {
-    { MATROSKA_ID_BLOCKADDID,      EBML_UINT, 0, offsetof(MatroskaBlock,additional_id) },
+    { MATROSKA_ID_BLOCKADDID,      EBML_UINT, 0, offsetof(MatroskaBlock,additional_id), { .u = 1 } },
     { MATROSKA_ID_BLOCKADDITIONAL, EBML_BIN,  0, offsetof(MatroskaBlock,additional) },
     { 0 }
 };
@@ -1319,7 +1319,7 @@ static int matroska_probe(AVProbeData *p)
 }
 
 static MatroskaTrack *matroska_find_track_by_num(MatroskaDemuxContext *matroska,
-                                                 int num)
+                                                 uint64_t num)
 {
     MatroskaTrack *tracks = matroska->tracks.elem;
     int i;
@@ -1328,7 +1328,7 @@ static MatroskaTrack *matroska_find_track_by_num(MatroskaDemuxContext *matroska,
         if (tracks[i].num == num)
             return &tracks[i];
 
-    av_log(matroska->ctx, AV_LOG_ERROR, "Invalid track number %d\n", num);
+    av_log(matroska->ctx, AV_LOG_ERROR, "Invalid track number %"PRIu64"\n", num);
     return NULL;
 }
 
@@ -3301,7 +3301,8 @@ static int matroska_parse_block(MatroskaDemuxContext *matroska, uint8_t *data,
     st = track->stream;
     if (st->discard >= AVDISCARD_ALL)
         return res;
-    av_assert1(block_duration != AV_NOPTS_VALUE);
+    if (block_duration > INT64_MAX)
+        block_duration = INT64_MAX;
 
     block_time = sign_extend(AV_RB16(data), 16);
     data      += 2;
@@ -3931,15 +3932,18 @@ static int webm_dash_manifest_read_header(AVFormatContext *s)
         av_log(s, AV_LOG_ERROR, "Failed to read file headers\n");
         return -1;
     }
-    if (!s->nb_streams) {
-        matroska_read_close(s);
-        av_log(s, AV_LOG_ERROR, "No streams found\n");
-        return AVERROR_INVALIDDATA;
+    if (!matroska->tracks.nb_elem || !s->nb_streams) {
+        av_log(s, AV_LOG_ERROR, "No track found\n");
+        ret = AVERROR_INVALIDDATA;
+        goto fail;
     }
 
     if (!matroska->is_live) {
         buf = av_asprintf("%g", matroska->duration);
-        if (!buf) return AVERROR(ENOMEM);
+        if (!buf) {
+            ret = AVERROR(ENOMEM);
+            goto fail;
+        }
         av_dict_set(&s->streams[0]->metadata, DURATION, buf, 0);
         av_free(buf);
 
@@ -3962,7 +3966,7 @@ static int webm_dash_manifest_read_header(AVFormatContext *s)
         ret = webm_dash_manifest_cues(s, init_range);
         if (ret < 0) {
             av_log(s, AV_LOG_ERROR, "Error parsing Cues\n");
-            return ret;
+            goto fail;
         }
     }
 
@@ -3972,6 +3976,9 @@ static int webm_dash_manifest_read_header(AVFormatContext *s)
                         matroska->bandwidth, 0);
     }
     return 0;
+fail:
+    matroska_read_close(s);
+    return ret;
 }
 
 static int webm_dash_manifest_read_packet(AVFormatContext *s, AVPacket *pkt)

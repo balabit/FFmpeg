@@ -1,3 +1,13 @@
+ffmpeg (7:3.4.8-0ubuntu0.2) bionic-security; urgency=medium
+
+  * SECURITY UPDATE: New upstream bugfix release.
+    - Fixes CVE-2019-12730, CVE-2019-13390, CVE-2019-17542,
+      CVE-2019-17539 and CVE-2020-13904.
+  * debian/patches/0006-disable-test-lavf-fits.patch:
+    - Disable lavf fits tests as it fails for i386.
+
+ -- Eduardo Barretto <eduardo.barretto@canonical.com>  Thu, 16 Jul 2020 11:05:39 -0300
+
 ffmpeg (7:3.4.6-0ubuntu0.18.04.1) bionic-security; urgency=medium
 
   * SECURITY UPDATE: New upstream bugfix release. (LP: #1823786)
